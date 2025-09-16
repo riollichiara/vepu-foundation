@@ -6,7 +6,9 @@ import "leaflet/dist/leaflet.css";
 import Modal from "./Modal";
 import DetailsPanel from "./DetailsPanel";
 import type { CrewMember, FlightDetails, Passenger } from "@/lib/data";
-import type { Icon } from "leaflet"; // solo tipo, ok per SSR
+import type { Icon } from "leaflet";
+
+ // solo tipo, ok per SSR
 
 // react-leaflet (client only)
 const MapContainer = dynamic(() => import("react-leaflet").then(m => m.MapContainer), { ssr: false });
@@ -29,7 +31,8 @@ const TRIANGLE = {
 export default function MapView() {
   // leaflet client-only, niente "any"
   const [leafletReady, setLeafletReady] = useState(false);
-  const [planeIcon, setPlaneIcon] = useState<Icon | null>(null);
+const [planeIcon, setPlaneIcon] = useState<Icon | null>(null);
+
 
   useEffect(() => {
     let mounted = true;
@@ -41,12 +44,12 @@ export default function MapView() {
         iconUrl:       "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
         shadowUrl:     "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
       });
-      const ic = new L.Icon({
-        iconUrl: "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/2708.svg",
-        iconSize: [24, 24],
-      });
-      setPlaneIcon(ic as unknown as Icon);
-      setLeafletReady(true);
+    const ic = new L.Icon({
+  iconUrl: "/plane-icon.png",
+  iconSize: [32, 32],
+});
+setPlaneIcon(ic as unknown as Icon);
+
     })();
     return () => { mounted = false; };
   }, []);
