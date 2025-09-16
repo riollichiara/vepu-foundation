@@ -3,8 +3,9 @@
 import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 import "leaflet/dist/leaflet.css";
+import { useMap } from "react-leaflet";
 
-// Carichiamo i componenti di react-leaflet SOLO sul client
+// Carico MapContainer e TileLayer solo lato client
 const MapContainer = dynamic(
   () => import("react-leaflet").then((m) => m.MapContainer),
   { ssr: false }
@@ -14,8 +15,22 @@ const TileLayer = dynamic(
   { ssr: false }
 );
 
+/** Forza il ricalcolo delle dimensioni dopo il mount */
+function AutoResize() {
+  const map = useMap();
+  useEffect(() => {
+    const id = setTimeout(() => {
+      try {
+        map.invalidateSize();
+      } catch {}
+    }, 50);
+    return () => clearTimeout(id);
+  }, [map]);
+  return null;
+}
+
 export default function MapView() {
-  // piccolo guard per essere sicuri di essere lato client
+  // piccolo guard: renderizza solo sul client
   const [ready, setReady] = useState(false);
   useEffect(() => setReady(true), []);
   if (!ready) return null;
@@ -28,18 +43,13 @@ export default function MapView() {
         style={{ height: "100%", width: "100%" }}
         className="z-0"
         worldCopyJump
-        whenReady={(e) => {
-          setTimeout(() => {
-            try {
-              e.target.invalidateSize();
-            } catch {}
-          }, 50);
-        }}
       >
         <TileLayer
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         />
+        {/* forza il resize appena la mappa è pronta */}
+        <AutoResize />
       </MapContainer>
     </div>
   );
