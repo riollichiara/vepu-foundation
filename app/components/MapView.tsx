@@ -147,9 +147,13 @@ setPlaneIcon(ic as unknown as Icon);
 
       {/* Back & Dettagli */}
       <div className="absolute top-4 left-4 flex flex-col gap-2">
-        <Link href="/" className="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 backdrop-blur border border-white/20">
-          ← Indietro
-        </Link>
+        <Link
+  href="/"
+  className="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 backdrop-blur border border-white/20"
+>
+  ← Indietro
+</Link>
+
       </div>
       <div className="absolute top-4 right-4">
         <button
