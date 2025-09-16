@@ -1,12 +1,14 @@
 "use client";
 import { useEffect, useMemo, useState } from "react";
 import dynamic from "next/dynamic";
+import Link from "next/link";
 import "leaflet/dist/leaflet.css";
 import Modal from "./Modal";
 import DetailsPanel from "./DetailsPanel";
 import type { CrewMember, FlightDetails, Passenger } from "@/lib/data";
+import type { Icon } from "leaflet"; // solo tipo, ok per SSR
 
-// react-leaflet: import dinamici (client only)
+// react-leaflet (client only)
 const MapContainer = dynamic(() => import("react-leaflet").then(m => m.MapContainer), { ssr: false });
 const TileLayer    = dynamic(() => import("react-leaflet").then(m => m.TileLayer),    { ssr: false });
 const Polyline     = dynamic(() => import("react-leaflet").then(m => m.Polyline),     { ssr: false });
@@ -25,9 +27,9 @@ const TRIANGLE = {
 };
 
 export default function MapView() {
-  // stato leaflet client-only
+  // leaflet client-only, niente "any"
   const [leafletReady, setLeafletReady] = useState(false);
-  const [planeIcon, setPlaneIcon] = useState<any>(null);
+  const [planeIcon, setPlaneIcon] = useState<Icon | null>(null);
 
   useEffect(() => {
     let mounted = true;
@@ -43,18 +45,20 @@ export default function MapView() {
         iconUrl: "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/2708.svg",
         iconSize: [24, 24],
       });
-      setPlaneIcon(ic);
+      setPlaneIcon(ic as unknown as Icon);
       setLeafletReady(true);
     })();
     return () => { mounted = false; };
   }, []);
 
-  // centro mappa
   const center = useMemo(() => [35, -20] as [number, number], []);
   const straight = useMemo(() => [LHR, KIN] as [typeof LHR, typeof KIN], []);
-  const diverted = useMemo(() => [LHR, TRIANGLE.bermuda, CEPRANO] as [typeof LHR, typeof TRIANGLE.bermuda, typeof CEPRANO], []);
+  const diverted = useMemo(
+    () => [LHR, TRIANGLE.bermuda, CEPRANO] as [typeof LHR, typeof TRIANGLE.bermuda, typeof CEPRANO],
+    []
+  );
 
-  // modali & dati protetti
+  // modali + dati protetti
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [unlocked, setUnlocked] = useState(false);
   const [pwd, setPwd] = useState("");
@@ -84,7 +88,7 @@ export default function MapView() {
     }
   };
 
-  // deterrenti anti-inspect (opzionali)
+  // deterrenti anti-inspect
   useEffect(() => {
     const onCtx = (e: MouseEvent) => e.preventDefault();
     const onKey = (e: KeyboardEvent) => {
@@ -113,16 +117,19 @@ export default function MapView() {
           {/* deviazione (LHR -> Bermuda -> Ceprano) */}
           <Polyline positions={diverted} pathOptions={{ color: "#f472b6", weight: 4 }} />
 
-          {/* triangolo delle Bermuda (contorno) */}
-          <Polyline positions={[TRIANGLE.miami, TRIANGLE.sanJuan, TRIANGLE.bermuda, TRIANGLE.miami]} pathOptions={{ color: "#fbbf24", weight: 2, dashArray: "6 8", opacity: 0.6 }} />
+          {/* triangolo delle Bermuda */}
+          <Polyline
+            positions={[TRIANGLE.miami, TRIANGLE.sanJuan, TRIANGLE.bermuda, TRIANGLE.miami]}
+            pathOptions={{ color: "#fbbf24", weight: 2, dashArray: "6 8", opacity: 0.6 }}
+          />
 
           <Marker position={LHR}><Popup>Partenza: London Heathrow (LHR)</Popup></Marker>
           <Marker position={KIN}><Popup>Destinazione prevista: Kingston (KIN), Giamaica</Popup></Marker>
 
-          <Marker position={CEPRANO} icon={planeIcon || undefined}>
+          <Marker position={CEPRANO} icon={planeIcon ?? undefined}>
             <Popup>
               <div className="space-y-1">
-                <div className="font-semibold">Luogo dell'incidente</div>
+                <div className="font-semibold">Luogo dell&apos;incidente</div>
                 <div className="text-sm text-zinc-300">
                   Si prega di recarsi sul posto per ulteriori analisi da portare in laboratorio.
                 </div>
@@ -137,7 +144,9 @@ export default function MapView() {
 
       {/* Back & Dettagli */}
       <div className="absolute top-4 left-4 flex flex-col gap-2">
-        <a href="/" className="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 backdrop-blur border border-white/20">← Indietro</a>
+        <Link href="/" className="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 backdrop-blur border border-white/20">
+          ← Indietro
+        </Link>
       </div>
       <div className="absolute top-4 right-4">
         <button
@@ -164,7 +173,11 @@ export default function MapView() {
                 placeholder=""
                 autoComplete="off"
               />
-              <button onClick={handleUnlock} className="px-4 py-2 rounded-xl bg-cyan-600 hover:bg-cyan-500 font-semibold">
+              <button
+                onClick={handleUnlock}
+                disabled={!pwd.trim()}
+                className="px-4 py-2 rounded-xl bg-cyan-600 hover:bg-cyan-500 font-semibold disabled:opacity-50"
+              >
                 Sblocca
               </button>
             </div>
@@ -178,4 +191,3 @@ export default function MapView() {
     </section>
   );
 }
-
