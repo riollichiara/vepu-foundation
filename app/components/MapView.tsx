@@ -123,9 +123,8 @@ export default function MapView() {
           style={{ height: "100%", width: "100%" }}     // full size
           className="z-0"
           worldCopyJump
-          whenCreated={(map) => {
-            setTimeout(() => { try { map.invalidateSize(); } catch {} }, 50);
-          }}
+         
+
         >
           <TileLayer
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
