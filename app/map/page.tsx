@@ -1,7 +1,11 @@
-import MapView from "@/app/components/MapView";
-
-export const metadata = { title: "Mappa — Intercettazione Aerea Vepu Foundation" };
+import MapView from "../components/MapView";
 
 export default function MapPage() {
-  return <MapView />;
+  return (
+    <main className="min-h-screen">
+      <div className="h-[100dvh] w-full">
+        <MapView />
+      </div>
+    </main>
+  );
 }
